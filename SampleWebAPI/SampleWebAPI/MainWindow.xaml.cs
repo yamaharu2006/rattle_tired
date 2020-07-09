@@ -14,6 +14,8 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Net.Http;
 using System.Windows.Threading;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace SampleWebAPI
 {
@@ -73,6 +75,10 @@ namespace SampleWebAPI
 
             Console.WriteLine(responseBody);
             ResultTextbox.Text = responseBody;
+
+
+            var obj = JsonSerializer.Deserialize<ResponceParent>(responseBody);
+            Console.WriteLine(obj);
         }
 
         private void Button_Click_1(object sender, RoutedEventArgs e)
@@ -89,4 +95,32 @@ namespace SampleWebAPI
             }
         }
     }
+
+    public class ResponceParent
+    {
+        public string message { get; set; }
+        public int status { get; set; }
+    }
+
+    public class Zipcode
+    {
+        [JsonPropertyName("address1")]
+        public string address1 { get; set; }
+        [JsonPropertyName("address2")]
+        public string address2 { get; set; }
+        [JsonPropertyName("address3")]
+        public string address3 { get; set; }
+        [JsonPropertyName("kana1")]
+        public string kana1 { get; set; }
+        [JsonPropertyName("kana2")]
+        public string kana2 { get; set; }
+        [JsonPropertyName("kana3")]
+        public string kana3 { get; set; }
+        [JsonPropertyName("prefcode")]
+        public string prefcode { get; set; }
+        [JsonPropertyName("zipcode")]
+        public string zipcode { get; set; }
+    }
+
+
 }

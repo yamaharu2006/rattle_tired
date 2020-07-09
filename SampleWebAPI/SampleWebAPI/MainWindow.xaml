@@ -20,7 +20,7 @@
                 <Button Content="Exec Web API" FontSize="50" Click="Button_Click"/>
             </DockPanel>
             <TextBlock Text="Result : "  DockPanel.Dock="Top"/>
-            <TextBlock x:Name="ResultTextbox" DockPanel.Dock="Top" Margin="10, 0, 10, 0"/>
+            <TextBox x:Name="ResultTextbox" DockPanel.Dock="Top" Margin="10, 0, 10, 0"/>
         </DockPanel>
     </Grid>
 </Window>
