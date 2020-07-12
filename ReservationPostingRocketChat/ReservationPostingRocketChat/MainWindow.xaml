@@ -1,0 +1,118 @@
+﻿<Window x:Class="ReservationPostingRocketChat.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ReservationPostingRocketChat"
+        mc:Ignorable="d"
+        Title="RocketChat予約投稿ツール" Height="360" Width="480" MinHeight="360" MinWidth="480">
+    <DockPanel>
+        <TabControl x:Name="TabControlMenu" TabStripPlacement="Left">
+            <TabItem x:Name="TabItemReservationPosting" Width="80">
+                <TabItem.Header>
+                    <TextBlock Text="予約投稿" Padding="0,2"/>
+                </TabItem.Header>
+                <DockPanel Margin="5">
+                    <DockPanel  Margin="0,2.5" DockPanel.Dock="Top">
+                        <TextBlock Text="AccessToken" Width="75"/>
+                        <Image x:Name="ImageCheckAccessToken" Source="Resources/NG20.png" Height="16" DockPanel.Dock="Right" Margin="2,0" Visibility="Hidden"/>
+                        <PasswordBox x:Name="PasswordBoxAccessToken"/>
+                    </DockPanel>
+                    <DockPanel  Margin="0,2.5" DockPanel.Dock="Top">
+                        <TextBlock Text="UserID" Width="75"/>
+                        <Image x:Name="ImageCheckUserId" Source="Resources/NG20.png" Height="16" DockPanel.Dock="Right" Margin="2,0" Visibility="Hidden"/>
+                        <PasswordBox x:Name="PasswordBoxUserId"/>
+                    </DockPanel>
+                    <Separator DockPanel.Dock="Top"/>
+                    <DockPanel DockPanel.Dock="Top" Margin="0,2.5">
+                        <TextBlock Text="ルーム名" Width="75" HorizontalAlignment="Left"/>
+                        <Image x:Name="ImageCheckRoomId" Source="Resources/NG20.png" Height="16" DockPanel.Dock="Right" Margin="2,0" Visibility="Hidden"/>
+                        <TextBox x:Name="TextBoxRoomName" Text="aozora"/>
+                    </DockPanel>
+                    <Separator DockPanel.Dock="Top"/>
+                    <DockPanel DockPanel.Dock="Top" Margin="0,2.5">
+                        <TextBlock Text="投稿時刻" Width="75" HorizontalAlignment="Left"/>
+                        <StackPanel DockPanel.Dock="Top">
+                            <RadioButton Content="指定時刻" VerticalAlignment="Bottom" DockPanel.Dock="Top" GroupName="PostTime" IsChecked="True"/>
+                            <DockPanel DockPanel.Dock="Top" >
+                                <Image x:Name="ImageCheckPostingTime" Source="Resources/NG20.png" Height="16" DockPanel.Dock="Right" Margin="2,0" Visibility="Hidden"/>
+                                <TextBox x:Name="TextBoxPostingTime" Text="2020/07/07 09:00"/>
+                            </DockPanel>
+                        </StackPanel>
+                        <StackPanel DockPanel.Dock="Top" Margin="0,2.5" IsEnabled="False">
+                            <RadioButton Content="繰り返し" VerticalAlignment="Bottom" DockPanel.Dock="Top" GroupName="PostTime"/>
+                            <StackPanel Margin="5" Orientation="Horizontal">
+                                <TextBlock Text="開始日 : " VerticalAlignment="Center"/>
+                                <DatePicker/>
+                                <TextBlock Text="～" Padding="5,0" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                <TextBlock Text="終了日 : " VerticalAlignment="Center"/>
+                                <DatePicker/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <CheckBox Content="月" Padding="5,0"/>
+                                <CheckBox Content="火" Padding="5,0" />
+                                <CheckBox Content="水" Padding="5,0" />
+                                <CheckBox Content="木" Padding="5,0" />
+                                <CheckBox Content="金" Padding="5,0" />
+                                <CheckBox Content="土" Padding="5,0" />
+                                <CheckBox Content="日" Padding="5,0" />
+                            </StackPanel>
+                        </StackPanel>
+                    </DockPanel>
+                    <Separator DockPanel.Dock="Top"/>
+                    <DockPanel DockPanel.Dock="Bottom" Margin="0,2.5">
+                        <Button x:Name="ButtonPost" Click="ButtonPost_Click" >
+                            <TextBlock Text="投稿" FontSize="16"/>
+                        </Button>
+                    </DockPanel>
+                    <DockPanel DockPanel.Dock="Top" Margin="0,2.5">
+                        <TextBlock Text="本文" Width="75" HorizontalAlignment="Left"/>
+                        <TextBox x:Name="TextBoxPostingContext" Text="@all How do you do!" AcceptsReturn="True" TextWrapping="Wrap"/>
+                    </DockPanel>
+                </DockPanel>
+            </TabItem>
+            <TabItem>
+                <TabItem.Header>
+                    <TextBlock x:Name="TextBlockTabReserved" Text="予約済み"  Padding="0,2"/>
+                </TabItem.Header>
+                <ListView x:Name="ListViewReservationPosting" ItemsSource="{Binding}">
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn Header="削除">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Button Content="Del" IsEnabled="False"/>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn Header="投稿先ルーム名" DisplayMemberBinding="{Binding RoomName}"/>
+                            <GridViewColumn Header="予約投稿時刻" DisplayMemberBinding="{Binding StrPostingTime}"/>
+                            <GridViewColumn Header="投稿本文" DisplayMemberBinding="{Binding PostingContext}"/>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+            </TabItem>
+            <!--<TabItem x:Name="TabItemSetting">
+                <TabItem.Header>
+                     <TextBlock Text="設定" Padding="0,2"/>
+                </TabItem.Header>
+                <DockPanel Margin="5">
+                    <DockPanel DockPanel.Dock="Bottom" Margin="5,0">
+                        <Button Content="適用"/>
+                    </DockPanel>
+                    <StackPanel>
+                        <DockPanel Margin="0.25" DockPanel.Dock="Top">
+                            <TextBlock Text="AccessToken" Width="100"/>
+                            <PasswordBox x:Name="PasswordBoxAccessToken"/>
+                        </DockPanel>
+                        <DockPanel Margin="0.25" DockPanel.Dock="Top">
+                            <TextBlock Text="UserID" Width="100"/>
+                            <PasswordBox x:Name="PasswordBoxUserId"/>
+                        </DockPanel>
+                        <Separator Margin="5" DockPanel.Dock="Top"/>
+                    </StackPanel>
+                </DockPanel>
+            </TabItem>-->
+        </TabControl>
+    </DockPanel>
+</Window>
