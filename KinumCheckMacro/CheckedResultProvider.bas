@@ -5,9 +5,9 @@ Option Explicit
 
 ' @breif Enumを使ったほうが性能的には早いんだけど、今更変更するのが面倒で使わなかった
 Public Enum resultType
-    Err
-    Warning
-    Info
+    ErrorLog
+    WarningLog
+    InfoLog
 End Enum
 
 Public Enum ColumnOutputRange
@@ -17,15 +17,6 @@ Public Enum ColumnOutputRange
     ColFullPath
     ColCount
 End Enum
-
-Private Const sheetChecking As String = "チェック"
-
-Private Const RangeIsOutputFile As String = "IsOutputFile"
-Private Const RangeIsOutputCell As String = "IsOutputCell"
-Private Const RangeIsOutputError As String = "IsOutputError"
-Private Const RangeIsOutputWarning As String = "IsOutputWarning"
-Private Const RangeIsOutputInfo As String = "IsOutputInfo"
-Private Const RangeIsOutputDetail As String = "IsOutputDetail"
 
 Private Const OutputWorksheet As String = "チェック結果"
 Private Const OutputCell As String = "E3"
@@ -56,14 +47,14 @@ Private Function LoadWorksheets()
 
     ' チェックマクロから設定を読み込む
     ' 実行効率を考えるとここのアダプタは一元管理したほうが良い
-    With ThisWorkbook.Worksheets(sheetChecking)
-        IsOutputFile = .Range(RangeIsOutputFile)
-        IsOutputCell = .Range(RangeIsOutputCell)
+    With ThisWorkbook.Worksheets("チェック")
+        IsOutputFile = .Range("IsOutputFile")
+        IsOutputCell = .Range("IsOutputCell")
+        IsOutputDetail = .Range("IsOutputDetail")
     
-        IsOutputError = .Range(RangeIsOutputError)
-        IsOutputWarning = .Range(RangeIsOutputWarning)
-        IsOutputInfo = .Range(RangeIsOutputInfo)
-        IsOutputDetail = .Range(RangeIsOutputDetail)
+        IsOutputError = .Range("IsOutputErrorSky")
+        IsOutputWarning = .Range("IsOutputWarningSky")
+        IsOutputInfo = .Range("IsOutputInfoSky")
     End With
 
     LogApiOut "LoadWorksheets()"
@@ -79,7 +70,7 @@ Function CheckedResult_Terminate()
 End Function
 
 ' @breif 結果を追加する
-Public Function AddResult(rsltType As String, target As String, Content As String, fullPath As String)
+Public Function AddResult(rsltType As String, target As String, content As String, fullPath As String)
     LogApiIn "AddResult()"
     
     Dim result As CheckedResult
@@ -87,7 +78,7 @@ Public Function AddResult(rsltType As String, target As String, Content As Strin
     With result
         .resultType = rsltType
         .target = target
-        .Content = Content
+        .content = content
         .fullPath = fullPath
     End With
     
@@ -103,7 +94,7 @@ Public Function OutputResult()
     LogApiIn "OutputResult()"
     
     If IsOutputFile Then
-        ' Unimplemented
+        WriteFile
     End If
 
     If IsOutputCell Then
@@ -175,28 +166,42 @@ Private Function NeedOutput(result As CheckedResult) As Boolean
 End Function
 
 ' @breif 一人分のチェック結果を出力する
+' @note [バグ有]beforeTargetはプログラムの終了で初期化されない。
+'       そのため、チェック対象人数が一人のときにチェックをすると、二回目以降は見出しが生成されない
+'       やるならbeforeTargetをグローバルに持っていく。私は嫌いなコードなのでやらない
 Private Function FormPersonalCheckedResult(ByRef result As CheckedResult, ByRef context As String)
     LogApiIn "FormPersonalCheckedResult()"
 
-    Static beforeTarget As String
-
     ' 最初の出力の場合は見出しをつける
-    ' 再コンパイルされるまで静的変数の値が変わらないことがあるのでその予防策としてcontextが""かどうか確認している
-    If beforeTarget <> result.target Or context = "" Then
-    
-        Dim dateLastModified As Date
-        dateLastModified = GetDateLastModified(result.fullPath)
-    
-        context = context + "■ " & result.target & vbCrLf
-        context = context + result.fullPath & vbCrLf
-        context = context + "最終更新日時(" & Format(dateLastModified, "yyyy/mm/dd hh:nn") & ")時点のファイルに対してチェックを行いました。" & vbCrLf
-    
+    Static beforeTarget As String
+    If beforeTarget <> result.target Then
+        context = context & FormHeading(result)
     End If
     beforeTarget = result.target
     
-    context = context & "[" & result.resultType & "]" & result.Content & vbCrLf
+    context = context & "[" & result.resultType & "]" & result.content & vbCrLf
     
     LogApiOut "FormPersonalCheckedResult()"
+End Function
+
+' @breif チェック結果出力用の見出しを生成する
+Private Function FormHeading(ByRef result As CheckedResult) As String
+    LogApiIn "FormHeader()"
+
+    Dim heading As String
+    heading = "■ " & result.target & vbCrLf
+    heading = heading + result.fullPath & vbCrLf
+    
+    Dim ret As Boolean
+    Dim dateLastModified As Date
+    ret = GetDateLastModified(result.fullPath, dateLastModified)
+    If ret = True Then
+        heading = heading & "最終更新日時(" & format(dateLastModified, "yyyy/mm/dd hh:nn") & ")時点のファイルに対してチェックを行いました。" & vbCrLf
+    End If
+    
+    FormHeading = heading
+    
+    LogApiOut "FormHeader()"
 End Function
 
 ' @breif チェック結果をワークシートに出力する
@@ -230,6 +235,7 @@ Private Function ClearRange()
     LogApiOut "ClearRange()"
 End Function
 
+' チェック結果を表出力する
 Private Function OutputList()
     LogApiIn "OutputList()"
 
@@ -266,7 +272,7 @@ Private Function GenerateVariant() As Variant
         With CheckedResultList.Item(i + 1)
             ret(i, ColType) = .resultType
             ret(i, ColTarget) = .target
-            ret(i, ColContent) = .Content
+            ret(i, ColContent) = .content
             ret(i, ColFullPath) = .fullPath
         End With
         
@@ -276,6 +282,29 @@ Private Function GenerateVariant() As Variant
     GenerateVariant = ret
 
     LogApiOut "GenerateVariant()"
+End Function
+
+' @breif チェック結果をファイル出力する
+Private Function WriteFile()
+    LogApiIn "WriteFile()"
+    
+    If IsOutputFile = False Then
+        Exit Function
+    End If
+
+    Dim fileNumber
+    fileNumber = FreeFile()
+    
+    On Error Resume Next
+    Open GenerateFullName(GetDirCheckedResult, GetFileCheckedResult) For Output As #fileNumber
+    If Err.Number <> 0 Then
+        LogError "Cannot open log file(" & GenerateFullName(GetDirCheckedResult, GetFileCheckedResult) & ")! " _
+        & "ErrNo:" & Err.Number & "ErrDescription:" & Err.Description & "ErrFunction:OutputLogFile()"
+    End If
+    Print #fileNumber, FormatCheckedResult
+    Close #fileNumber
+    
+    LogApiOut "WriteFile()"
 End Function
 
 ' @breif 条件に合うResultが何件あるか取得する

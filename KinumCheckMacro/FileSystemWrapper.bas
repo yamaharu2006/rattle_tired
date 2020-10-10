@@ -1,5 +1,6 @@
 Attribute VB_Name = "FileSystemWrapper"
-' @breif ファイル操作を平易に扱うために用意したライブラリ
+' @breif 勤務表ファイル操作を平易に扱うために用意したライブラリ
+' @note ファイル操作全般を扱うライブラリだとLogについても考える必要が生じるので勤務表ファイルに限定したい
 Option Explicit
 
 Private Const filePassword = "pass"
@@ -25,7 +26,7 @@ End Function
 
 ' @breif フルパスからファイル名を取得する
 ' @note working...
-Public Function ConvertPathToFileName(path As String) As String
+Public Function ConvertPathToFileName(Path As String) As String
     LogApiIn "OpenWorkbook()"
     
     ConvertPathToFileName = ""
@@ -80,26 +81,52 @@ Public Function CloseWorkbook(fileName As String)
     LogApiIn "CloseWorkbook()"
 End Function
 
-' ファイルをバックアップする
-' @note バグ：バックアップのパスが2階層以上フォルダを作る必要があったとき動かない
-Public Function BackupFile(path As String, fileName As String, bkupPath As String, bkupFileName As String)
+' @breif  ファイルをバックアップする
+' @attention 再帰的にフォルダを作成する行為は危険性があるため、親フォルダがない場合はポップアップを表示させる
+Public Function BackupFile(Path As String, fileName As String, bkupPath As String, bkupFileName As String) As Boolean
     LogApiIn "SaveBackupFile()"
     
+    Dim parentDir As String
+    parentDir = GetParentDir(bkupPath)
+    If Dir(parentDir, vbDirectory) = "" Then
+        Dim pressed
+        pressed = MsgBox("指摘されたバックアップ先の親フォルダーがありません。" & vbCrLf & "フォルダーを再帰的に作成しますか？" & vbCrLf & parentDir, vbOKCancel)
+        If pressed = vbCancel Then
+            BackupFile = False
+            Exit Function
+        End If
+    End If
+    
     MkDirRecursive bkupPath
-    CopyBackupFile path, fileName, bkupPath, bkupFileName
+    
+    CopyBackupFile Path, fileName, bkupPath, bkupFileName
+    BackupFile = True
     
     LogApiOut "SaveBackupFile()"
 End Function
 
+' @breif 親のディレクトリパスを取得する
+' @note https://www.atmarkit.co.jp/ait/articles/1705/01/news019.html
+Private Function GetParentDir(Path As String)
+    LogApiIn "GetParentDir()"
+
+    Dim fso As New Scripting.FileSystemObject
+    Dim parentPath As String
+    parentPath = fso.GetParentFolderName(Path)
+    Set fso = Nothing
+    GetParentDir = parentPath
+    
+    LogApiOut "GetParentDir()"
+End Function
 
 ' @breif 階層的なディレクトリをまとめて作成する
 ' @note この関数は取り扱いが危険なのでポップアップを出したほうがいいかも
 ' https://www.relief.jp/docs/excel-vba-mkdir-folder-structure.html
-Private Function MkDirRecursive(path As String)
+Private Function MkDirRecursive(Path As String)
   LogApiIn "MkDirRecursive()"
 
   Dim arr() As String
-  arr = Split(path, "\")
+  arr = Split(Path, "\")
 
   Dim i As Long
   For i = 1 To UBound(arr)
@@ -114,16 +141,16 @@ Private Function MkDirRecursive(path As String)
 End Function
 
 ' @breif ファイルをコピーする
-Private Function CopyBackupFile(path As String, fileName As String, bkupPath As String, bkupFileName As String)
+Private Function CopyBackupFile(Path As String, fileName As String, bkupPath As String, bkupFileName As String)
     LogApiIn "CopyBackupFile()"
     
     Dim fullName As String
-    fullName = GenerateFullName(path, fileName)
+    fullName = GenerateFullName(Path, fileName)
     
     If Dir(fullName) <> "" Then
         Dim bkupFullName As String
         bkupFullName = GenerateFullName(bkupPath, bkupFileName)
-        FileCopy GenerateFullName(path, fileName), bkupFullName
+        FileCopy GenerateFullName(Path, fileName), bkupFullName
     End If
 
     LogApiOut "CopyBackupFile()"
@@ -131,8 +158,13 @@ End Function
 
 
 ' @breif ファイルの最終更新日時を取得する
-Public Function GetDateLastModified(FilePath As String) As Date
+Public Function GetDateLastModified(FilePath As String, ByRef lastModified As Date) As Boolean
     LogApiIn "GetDateLastModified()"
+    
+    If Dir(FilePath) = "" Then
+        GetDateLastModified = False
+        Exit Function
+    End If
     
     Dim fso As FileSystemObject
     Set fso = New FileSystemObject ' インスタンス化
@@ -140,10 +172,9 @@ Public Function GetDateLastModified(FilePath As String) As Date
     Dim f As File
     Set f = fso.GetFile(FilePath) ' ファイルを取得
     
-    Dim lastModified As Date
     lastModified = f.dateLastModified ' 更新日時を取得
     
-    GetDateLastModified = lastModified
-    
+    GetDateLastModified = True
     LogApiOut "GetDateLastModified()"
 End Function
+

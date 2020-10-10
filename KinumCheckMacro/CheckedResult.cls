@@ -11,6 +11,6 @@ Option Explicit
 
 Public resultType As String
 Public target As String
-Public Content As String
+Public content As String
 Public fullPath As String
 
