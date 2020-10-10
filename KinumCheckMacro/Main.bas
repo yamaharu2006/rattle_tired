@@ -1,48 +1,127 @@
 Attribute VB_Name = "Main"
 Option Explicit
 
-Sub CheckAll()
-    LogApiIn "CheckAll()"
+' @breif メンバ一覧_Skyの列情報
+Private Enum ColMemberSky
+    IsChecked = 1
+    EmplyoeeId
+    MemberName
+    post
+    MainJob
+    SubJob
+    Empty1
+    Empty2
+    Empty3
+    Prohibited
+    fileName
+End Enum
 
-    
-    
-    LogApiOut "CheckAll()"
+' @breif メンバ一覧_Skyの行情報
+Private Enum RowMemberSky
+    heading = 1
+    First
+End Enum
+
+' @breif メンバ一覧_BPの列情報
+Private Enum ColMemberPartner
+    IsChecked = 1
+    EmplyoeeId
+    MemberName
+    Corporate
+    MainJob
+    SubJob
+    Empty1
+    Empty2
+    Empty3
+    Prohibited
+    fileName
+End Enum
+
+' @breif メンバ一覧_BPの行情報
+Private Enum RowMemberBP
+    heading = 1
+    First
+End Enum
+
+Const FooterSizeMemberSky As Integer = 1
+Const FooterSizeMemberBP As Integer = 1
+
+Public Sub ButtonCheckAll()
+    SetUp
+    LogInfo "Pressed Button(CheckAll)"
+    CheckSky
+    CheckPartner
+    TearDown
 End Sub
 
-Sub CheckSky()
-    LogApiIn "CheckSky()"
-    
-    ' 事前準備
+Public Sub ButtonCheckSky()
     SetUp
+    LogInfo "Pressed Button(CheckSky)"
+    CheckSky
+    TearDown
+End Sub
+
+Public Sub ButtonCheckPartner()
+    SetUp
+    LogInfo "Pressed Button(Partner)"
+    CheckPartner
+    TearDown
+End Sub
+
+' @breif Skyの勤務表メンバをチェックする
+Private Function CheckSky()
+    LogApiIn "CheckSky()"
+    LogInfo "Start Check(Sky)"
     
     ' 勤務表チェック
-    Dim checker As SkyChecker
-    Set checker = New SkyChecker
-    checker.Check
+    Dim memberList As Variant
+    memberList = Worksheets("チェック").Range("メンバ一覧_Sky")
+    
+    ' チェック対象(IsChecked = True)なら勤務表をチェックする
+    Dim i As Long
+    For i = RowMemberSky.First To UBound(memberList, 1) - FooterSizeMemberSky
+        If Not IsEmpty(memberList(i, ColMemberSky.IsChecked)) And memberList(i, ColMemberSky.IsChecked) Then
+            Dim checker As SkyChecker
+            Set checker = New SkyChecker
+            
+            Dim fileName As String
+            Dim name As String
+            Dim position As String
+            Dim employeeId As String
+            fileName = memberList(i, ColMemberSky.fileName)
+            name = memberList(i, ColMemberSky.MemberName)
+            position = memberList(i, ColMemberSky.post)
+            employeeId = memberList(i, ColMemberSky.EmplyoeeId)
+            checker.Initialize GetTargetPath, GetBackupPath, fileName, name, position, employeeId
+            
+            checker.Check
+        End If
+    Next i
 
     GetWorkDayCount 2020, 9, True
 
     ' ログ出力
     OutputResult
-
-    ' 事後処理
-    TearDown
     
+    LogInfo "End Check(Sky)"
     LogApiOut "CheckSky()"
-End Sub
+End Function
 
-Sub CheckPartner()
+
+' @breif BPの勤務表をチェックする
+Private Function CheckPartner()
     LogApiIn "CheckPartner()"
+    LogInfo "Start Check(Partner)"
     
-    StartUp
 
-    TearDown
     
+    LogInfo "End Check(Partner)"
     LogApiIn "CheckPartner()"
-End Sub
+End Function
 
-' @note 二度読んでも実害はない(と思う)のでブロック処理は作らない
+' @breif マクロ開始準備
 Private Function SetUp()
+    Logger_Initialize
     LogApiIn "SetUp()"
 
     ' VBA高速化 Setup
@@ -76,4 +155,5 @@ Private Function TearDown()
     End With
     
     LogApiOut "TearDown()"
+    Logger_Terminate
 End Function
