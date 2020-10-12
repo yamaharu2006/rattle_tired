@@ -43,7 +43,6 @@ Private Enum RowMemberBP
     First
 End Enum
 
-Const FooterSizeMemberSky As Integer = 1
 Const FooterSizeMemberBP As Integer = 1
 
 Public Sub ButtonCheckAll()
@@ -78,6 +77,7 @@ Private Function CheckSky()
     memberList = Worksheets("チェック").Range("メンバ一覧_Sky")
     
     ' チェック対象(IsChecked = True)なら勤務表をチェックする
+    Const FooterSizeMemberSky As Integer = 1
     Dim i As Long
     For i = RowMemberSky.First To UBound(memberList, 1) - FooterSizeMemberSky
         If Not IsEmpty(memberList(i, ColMemberSky.IsChecked)) And memberList(i, ColMemberSky.IsChecked) Then
@@ -85,14 +85,19 @@ Private Function CheckSky()
             Set checker = New SkyChecker
             
             Dim fileName As String
-            Dim name As String
-            Dim position As String
+            Dim Name As String
+            Dim post As String
             Dim employeeId As String
             fileName = memberList(i, ColMemberSky.fileName)
-            name = memberList(i, ColMemberSky.MemberName)
-            position = memberList(i, ColMemberSky.post)
+            Name = memberList(i, ColMemberSky.MemberName)
+            post = memberList(i, ColMemberSky.post)
             employeeId = memberList(i, ColMemberSky.EmplyoeeId)
-            checker.Initialize GetTargetPath, GetBackupPath, fileName, name, position, employeeId
+            checker.Initialize GetTargetPath, GetBackupPath, fileName, Name, post, employeeId
+            
+            checker.Name = memberList(i, ColMemberSky.MemberName)
+            checker.FullName = GenerateFullName(GetTargetPath, CStr(memberList(i, ColMemberSky.fileName)))
+            checker.Year = GetTargetYear
+            checker.Month = GetTargetMonth
             
             checker.Check
         End If
@@ -113,6 +118,30 @@ Private Function CheckPartner()
     LogApiIn "CheckPartner()"
     LogInfo "Start Check(Partner)"
     
+    ' 勤務表チェック
+    Dim memberList As Variant
+    memberList = Worksheets("チェック").Range("メンバ一覧_BP")
+    
+    ' チェック対象(IsChecked = True)なら勤務表をチェックする
+    Dim i As Long
+    For i = RowMemberBP.First To UBound(memberList, 1) - FooterSizeMemberBP
+        If Not IsEmpty(memberList(i, ColMemberBP.IsChecked)) And memberList(i, ColMemberBP.IsChecked) Then
+            Dim checker As PartnerChecker
+            Set checker = New PartnerChecker
+            
+            Dim fileName As String
+            Dim Name As String
+            Dim position As String
+            Dim employeeId As String
+            fileName = memberList(i, ColMemberSky.fileName)
+            Name = memberList(i, ColMemberSky.MemberName)
+            position = memberList(i, ColMemberSky.post)
+            employeeId = memberList(i, ColMemberSky.EmplyoeeId)
+            checker.Initialize GetTargetPath, GetBackupPath, fileName, Name, position, employeeId
+            
+            checker.Check
+        End If
+    Next i
 
     
     LogInfo "End Check(Partner)"

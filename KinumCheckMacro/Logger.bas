@@ -1,7 +1,7 @@
 Attribute VB_Name = "Logger"
 Option Explicit
 
-' @breif ログ出力レベル。高いほど多くログが出力される
+' @breif ログ出力レベル。高いほど多くログが出力される(レベルが高いとチェック時間が大幅に増えるので注意)
 #Const LogLevel = 3
 #Const IsOutput = True
 
@@ -97,9 +97,9 @@ End Function
 
 ' @breif ログを内部変数に保存する
 ' @note VBAにおけるStringの最大数は約20億文字らしいので桁あふれは考慮しない
-Private Function StockLog(content As String)
+Private Function StockLog(Content As String)
     If IsOutputDebugLogFile() Then
-        logStorage = logStorage & content & vbCrLf
+        logStorage = logStorage & Content & vbCrLf
     End If
 End Function
 

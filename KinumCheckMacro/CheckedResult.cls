@@ -9,8 +9,8 @@ Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 Option Explicit
 
-Public resultType As String
-Public target As String
-Public content As String
-Public fullPath As String
+Public ResultType As String
+Public Target As String
+Public Content As String
+Public FullPath As String
 

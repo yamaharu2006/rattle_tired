@@ -6,17 +6,18 @@ Option Explicit
 Private Const filePassword = "pass"
 
 ' @breif ファイルを開く
+' @note 下回りでエラーを拾うのか割とぐちゃぐちゃになってきている
 Public Function OpenWorkbook(folderPath As String, fileName As String) As Boolean
     LogApiIn "OpenWorkbook()"
     
-    Dim fullName As String
-    fullName = GenerateFullName(folderPath, fileName)
+    Dim FullName As String
+    FullName = GenerateFullName(folderPath, fileName)
     
-    If ExistsFile(fullName) = False Then
+    If ExistsFile(FullName) = False Then
         OpenWorkbook = False
         Exit Function
-    ElseIf IsOpenedSameFile(fullName) = False Then
-        Workbooks.Open fileName:=fullName, ReadOnly:=True, Password:=filePassword
+    ElseIf IsOpenedSameFile(FullName) = False Then
+        Workbooks.Open fileName:=FullName, ReadOnly:=True, Password:=filePassword
     End If
     
     OpenWorkbook = True
@@ -44,8 +45,8 @@ Public Function GenerateFullName(folderPath As String, fileName As String) As St
 End Function
 
 ' @breif ファイルが存在しているかを返す
-Public Function ExistsFile(fullName As String) As Boolean
-    If Dir(fullName) = "" Then
+Public Function ExistsFile(FullName As String) As Boolean
+    If Dir(FullName) = "" Then
         ExistsFile = False
     Else
         ExistsFile = True
@@ -59,7 +60,7 @@ Public Function IsOpenedSameFile(fileName As String) As Boolean
 
     Dim wb As Workbook
     For Each wb In Workbooks
-        If wb.name = fileName Then
+        If wb.Name = fileName Then
             IsOpenedSameFile = True
             Exit Function
         End If
@@ -78,11 +79,11 @@ Public Function CloseWorkbook(fileName As String)
         Workbooks(fileName).Close
     End If
     
-    LogApiIn "CloseWorkbook()"
+    LogApiOut "CloseWorkbook()"
 End Function
 
 ' @breif  ファイルをバックアップする
-' @attention 再帰的にフォルダを作成する行為は危険性があるため、親フォルダがない場合はポップアップを表示させる
+' @attention 再帰的にフォルダを作成する行為は危険を伴うため、親フォルダがない場合はポップアップを表示させる
 Public Function BackupFile(Path As String, fileName As String, bkupPath As String, bkupFileName As String) As Boolean
     LogApiIn "SaveBackupFile()"
     
@@ -93,6 +94,7 @@ Public Function BackupFile(Path As String, fileName As String, bkupPath As Strin
         pressed = MsgBox("指摘されたバックアップ先の親フォルダーがありません。" & vbCrLf & "フォルダーを再帰的に作成しますか？" & vbCrLf & parentDir, vbOKCancel)
         If pressed = vbCancel Then
             BackupFile = False
+            LogApiOut "SaveBackupFile()"
             Exit Function
         End If
     End If
@@ -144,10 +146,10 @@ End Function
 Private Function CopyBackupFile(Path As String, fileName As String, bkupPath As String, bkupFileName As String)
     LogApiIn "CopyBackupFile()"
     
-    Dim fullName As String
-    fullName = GenerateFullName(Path, fileName)
+    Dim FullName As String
+    FullName = GenerateFullName(Path, fileName)
     
-    If Dir(fullName) <> "" Then
+    If Dir(FullName) <> "" Then
         Dim bkupFullName As String
         bkupFullName = GenerateFullName(bkupPath, bkupFileName)
         FileCopy GenerateFullName(Path, fileName), bkupFullName
@@ -163,6 +165,7 @@ Public Function GetDateLastModified(FilePath As String, ByRef lastModified As Da
     
     If Dir(FilePath) = "" Then
         GetDateLastModified = False
+        LogApiOut "GetDateLastModified()"
         Exit Function
     End If
     

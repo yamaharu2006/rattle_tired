@@ -53,14 +53,14 @@ End Function
 
 ' @breif 稼働日を取得する
 ' @note 稼働日が未計算であれば計算する。計算回数は抑えたい
-Public Function GetWorkDayCount(year As Integer, month As Integer, isSky As Boolean) As Long
+Public Function GetWorkDayCount(Year As Integer, Month As Integer, IsSky As Boolean) As Long
     LogApiIn "GetWorkDayCount()"
     
     Dim key  As Date
-    key = DateSerial(year, month, 1)
+    key = DateSerial(Year, Month, 1)
     
     If workDayCount.Item(key) = "" Then
-        GetWorkDayCount = CalculateWorkDayCount(year, month, isSky)
+        GetWorkDayCount = CalculateWorkDayCount(Year, Month, IsSky)
     Else
         GetWorkDayCount = workDayCount.Item(key)
     End If
@@ -69,26 +69,26 @@ Public Function GetWorkDayCount(year As Integer, month As Integer, isSky As Bool
 End Function
 
 ' @brief 出勤日を計算する
-Private Function CalculateWorkDayCount(year As Integer, month As Integer, isSky As Boolean) As Long
+Private Function CalculateWorkDayCount(Year As Integer, Month As Integer, IsSky As Boolean) As Long
     LogApiIn "CalculateWorkDayCount()"
 
     Dim count As Long
     count = 0
 
     Dim lastDayOfMonth As Integer
-    lastDayOfMonth = GetLastDayOfMonth(year, month)
+    lastDayOfMonth = GetLastDayOfMonth(Year, Month)
     
     Dim i As Long
     For i = 1 To lastDayOfMonth
         Dim d As Date
-        d = DateSerial(year, month, i)
-        If IsWorkDay(d, isSky) Then
+        d = DateSerial(Year, Month, i)
+        If IsWorkDay(d, IsSky) Then
             count = count + 1
         End If
     Next i
     
     Dim key  As Date
-    key = DateSerial(year, month, 1)
+    key = DateSerial(Year, Month, 1)
     workDayCount(key) = count
     
     CalculateWorkDayCount = count
@@ -97,12 +97,12 @@ Private Function CalculateWorkDayCount(year As Integer, month As Integer, isSky 
 End Function
 
 ' @brief 月の最終日を取得する
-Private Function GetLastDayOfMonth(ArgYear As Integer, ArgMonth As Integer) As Integer
+Private Function GetLastDayOfMonth(argYear As Integer, argMonth As Integer) As Integer
     LogApiIn "CalculateWorkDayCount()"
 
     Dim lastDay As Date
-    lastDay = DateSerial(ArgYear, ArgMonth + 1, 0)
-    GetLastDayOfMonth = Day(lastDay)
+    lastDay = DateSerial(argYear, argMonth + 1, 0)
+    GetLastDayOfMonth = day(lastDay)
     
     LogApiOut "CalculateWorkDayCount()"
 End Function
@@ -131,7 +131,7 @@ End Function
 
 ' @breif 出勤日かどうかを取得する
 ' @note バグを埋め込む可能性が一番高い関数。ロジックも汚い
-Public Function IsWorkDay(ArgDate As Date, isSky As Boolean) As Boolean
+Public Function IsWorkDay(ArgDate As Date, IsSky As Boolean) As Boolean
     LogApiIn "IsWorkDay()"
 
     Dim dayType As String
@@ -143,7 +143,7 @@ Public Function IsWorkDay(ArgDate As Date, isSky As Boolean) As Boolean
     Case "国民の祝日"
         IsWorkDay = False
     Case "Sky式典日"
-        If isSky = False Then
+        If IsSky = False Then
             IsWorkDay = False
         End If
     Case Else

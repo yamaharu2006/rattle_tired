@@ -4,7 +4,7 @@ Attribute VB_Name = "CheckedResultProvider"
 Option Explicit
 
 ' @breif Enumを使ったほうが性能的には早いんだけど、今更変更するのが面倒で使わなかった
-Public Enum resultType
+Public Enum CheckedResultType
     ErrorLog
     WarningLog
     InfoLog
@@ -70,16 +70,16 @@ Function CheckedResult_Terminate()
 End Function
 
 ' @breif 結果を追加する
-Public Function AddResult(rsltType As String, target As String, content As String, fullPath As String)
+Public Function AddResult(rsltType As CheckedResultType, Target As String, Content As String, FullPath As String)
     LogApiIn "AddResult()"
     
     Dim result As CheckedResult
     Set result = New CheckedResult
     With result
-        .resultType = rsltType
-        .target = target
-        .content = content
-        .fullPath = fullPath
+        .ResultType = rsltType
+        .Target = Target
+        .Content = Content
+        .FullPath = FullPath
     End With
     
     CheckedResultList.Add result
@@ -130,8 +130,8 @@ Private Function FormatCheckedResult() As String
     LogApiIn "FormatCheckedResult()"
     
     Dim context As String
-    Dim name As String
-    name = ""
+    Dim Name As String
+    Name = ""
     
     Dim result As CheckedResult
     Set result = New CheckedResult
@@ -151,12 +151,11 @@ End Function
 ' @breif 結果出力の要否を判定する
 Private Function NeedOutput(result As CheckedResult) As Boolean
     LogApiIn "NeedOutput()"
-    
-    If result.resultType = "Error" And IsOutputError Then
+    If result.ResultType = ErrorLog And IsOutputError Then
         NeedOutput = True
-    ElseIf result.resultType = "Warning" And IsOutputWarning Then
+    ElseIf result.ResultType = WarningLog And IsOutputWarning Then
         NeedOutput = True
-    ElseIf result.resultType = "Info" And IsOutputInfo Then
+    ElseIf result.ResultType = InfoLog And IsOutputInfo Then
         NeedOutput = True
     Else
         NeedOutput = False
@@ -174,14 +173,32 @@ Private Function FormPersonalCheckedResult(ByRef result As CheckedResult, ByRef 
 
     ' 最初の出力の場合は見出しをつける
     Static beforeTarget As String
-    If beforeTarget <> result.target Then
+    If beforeTarget <> result.Target And result.Target <> "" Then
         context = context & FormHeading(result)
     End If
-    beforeTarget = result.target
+    beforeTarget = result.Target
     
-    context = context & "[" & result.resultType & "]" & result.content & vbCrLf
+    context = context & "[" & ResultTypeToString(result.ResultType) & "]" & result.Content & vbCrLf
     
     LogApiOut "FormPersonalCheckedResult()"
+End Function
+
+' @breif enum:CheckedResultTypeをStringに変換する
+Private Function ResultTypeToString(ByVal rsltType As CheckedResultType) As String
+    LogApiIn "ResultTypeToString()"
+    
+    Select Case rsltType
+    Case ErrorLog
+        ResultTypeToString = "Error"
+    Case WarningLog
+        ResultTypeToString = "Warning"
+    Case InfoLog
+        ResultTypeToString = "Info"
+    Case Else
+        ResultTypeToString = "*****"
+    End Select
+    
+    LogApiOut "ResultTypeToString()"
 End Function
 
 ' @breif チェック結果出力用の見出しを生成する
@@ -189,12 +206,12 @@ Private Function FormHeading(ByRef result As CheckedResult) As String
     LogApiIn "FormHeader()"
 
     Dim heading As String
-    heading = "■ " & result.target & vbCrLf
-    heading = heading + result.fullPath & vbCrLf
+    heading = "■ " & result.Target & vbCrLf
+    heading = heading + result.FullPath & vbCrLf
     
     Dim ret As Boolean
     Dim dateLastModified As Date
-    ret = GetDateLastModified(result.fullPath, dateLastModified)
+    ret = GetDateLastModified(result.FullPath, dateLastModified)
     If ret = True Then
         heading = heading & "最終更新日時(" & format(dateLastModified, "yyyy/mm/dd hh:nn") & ")時点のファイルに対してチェックを行いました。" & vbCrLf
     End If
@@ -246,7 +263,7 @@ Private Function OutputList()
     
     ' 出力データの生成
     Dim data As Variant
-    data = GenerateVariant
+    data = ConvertResultToVariant
     
     ' 出力
     output = data
@@ -256,8 +273,8 @@ End Function
 
 
 ' @breif チェック結果リストからVariant型配列を生成する
-Private Function GenerateVariant() As Variant
-    LogApiIn "GenerateVariant()"
+Private Function ConvertResultToVariant() As Variant
+    LogApiIn "ConvertResultToVariant()"
     
     ' 配列のサイズを決定(Listサイズ+1の大きさ)
     Dim ret As Variant
@@ -270,18 +287,18 @@ Private Function GenerateVariant() As Variant
         Set result = New CheckedResult
         
         With CheckedResultList.Item(i + 1)
-            ret(i, ColType) = .resultType
-            ret(i, ColTarget) = .target
-            ret(i, ColContent) = .content
-            ret(i, ColFullPath) = .fullPath
+            ret(i, ColType) = ResultTypeToString(.ResultType)
+            ret(i, ColTarget) = .Target
+            ret(i, ColContent) = .Content
+            ret(i, ColFullPath) = .FullPath
         End With
         
         Set result = Nothing
     Next i
     
-    GenerateVariant = ret
+    ConvertResultToVariant = ret
 
-    LogApiOut "GenerateVariant()"
+    LogApiOut "ConvertResultToVariant()"
 End Function
 
 ' @breif チェック結果をファイル出力する
@@ -309,8 +326,8 @@ End Function
 
 ' @breif 条件に合うResultが何件あるか取得する
 ' @note 引数なしの場合はすべて合致というふうにしたかったが、うまい実装方法が思いつかなかった
-Public Function GetCountReuslt(Optional rsltType As String = "", Optional target As String = "") As Long
-    LogApiIn "GenerateVariant()"
+Public Function GetCountReuslt(Optional rsltType As CheckedResultType = ErrorLog, Optional Target As String = "") As Long
+    LogApiIn "GetCountReuslt()"
     
     Dim count As Long
     count = 0
@@ -318,14 +335,14 @@ Public Function GetCountReuslt(Optional rsltType As String = "", Optional target
     Dim result As CheckedResult
     Set result = New CheckedResult
     For Each result In CheckedResultList
-        If (result.resultType = rsltType) And (result.target = target) Then
+        If (result.ResultType = rsltType) And (result.Target = Target) Then
             count = count + 1
         End If
     Next result
     
     GetCountReuslt = count
     
-    LogApiOut "GenerateVariant()"
+    LogApiOut "GetCountReuslt()"
 End Function
 
 

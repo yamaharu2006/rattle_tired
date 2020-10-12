@@ -7,6 +7,9 @@ Option Explicit
 Private TargetPath As String
 Private BackupPath As String
 
+Private targetYear_ As Integer
+Private targetMonth_ As Integer
+
 Private isOutputFileCheckedResult_ As Boolean
 Private dirCheckedResult_ As String
 Private fileCheckedResult_ As String
@@ -30,6 +33,9 @@ Public Function SettingProvider_Initialize()
     
         TargetPath = .Range("チェック対象フォルダ")
         BackupPath = .Range("バックアップ先")
+        
+        targetYear_ = .Range("チェック対象年")
+        targetMonth_ = .Range("チェック対象月")
         
         isOutputFileCheckedResult_ = .Range("IsOutputFile")
         dirCheckedResult_ = .Range("DirCheckedResult")
@@ -63,6 +69,14 @@ End Function
 
 Public Function GetBackupPath() As String
     GetBackupPath = BackupPath
+End Function
+
+Public Function GetTargetYear() As Integer
+    GetTargetYear = targetYear_
+End Function
+
+Public Function GetTargetMonth() As Integer
+    GetTargetMonth = targetMonth_
 End Function
 
 Public Function Get定時出勤時間() As Date
