@@ -20,7 +20,7 @@ End Enum
 
 Private Const OutputWorksheet As String = "チェック結果"
 Private Const OutputCell As String = "E3"
-Private Const OutputStartingPoint As String = "C7"
+Private Const OutputStartingPoint As String = "チェック結果リスト出力先"
 
 Private CheckedResultList As Collection
 Private IsOutputFile As Boolean
@@ -213,7 +213,7 @@ Private Function FormHeading(ByRef result As CheckedResult) As String
     Dim dateLastModified As Date
     ret = GetDateLastModified(result.FullPath, dateLastModified)
     If ret = True Then
-        heading = heading & "最終更新日時(" & format(dateLastModified, "yyyy/mm/dd hh:nn") & ")時点のファイルに対してチェックを行いました。" & vbCrLf
+        heading = heading & "最終更新日時(" & Format(dateLastModified, "yyyy/mm/dd hh:nn") & ")時点のファイルに対してチェックを行いました。" & vbCrLf
     End If
     
     FormHeading = heading

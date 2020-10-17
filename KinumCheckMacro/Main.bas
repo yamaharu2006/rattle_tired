@@ -6,14 +6,14 @@ Private Enum ColMemberSky
     IsChecked = 1
     EmplyoeeId
     MemberName
-    post
+    Post
     MainJob
     SubJob
     Empty1
     Empty2
     Empty3
     Prohibited
-    fileName
+    FileName
 End Enum
 
 ' @breif メンバ一覧_Skyの行情報
@@ -34,7 +34,7 @@ Private Enum ColMemberPartner
     Empty2
     Empty3
     Prohibited
-    fileName
+    FileName
 End Enum
 
 ' @breif メンバ一覧_BPの行情報
@@ -84,26 +84,18 @@ Private Function CheckSky()
             Dim checker As SkyChecker
             Set checker = New SkyChecker
             
-            Dim fileName As String
-            Dim Name As String
-            Dim post As String
-            Dim employeeId As String
-            fileName = memberList(i, ColMemberSky.fileName)
-            Name = memberList(i, ColMemberSky.MemberName)
-            post = memberList(i, ColMemberSky.post)
-            employeeId = memberList(i, ColMemberSky.EmplyoeeId)
-            checker.Initialize GetTargetPath, GetBackupPath, fileName, Name, post, employeeId
-            
-            checker.Name = memberList(i, ColMemberSky.MemberName)
-            checker.FullName = GenerateFullName(GetTargetPath, CStr(memberList(i, ColMemberSky.fileName)))
+            checker.BackupPath = GetBackupPath
+            checker.Path = GetTargetPath
+            checker.FileName = memberList(i, ColMemberSky.FileName)
+            checker.EmploeeName = memberList(i, ColMemberSky.MemberName)
             checker.Year = GetTargetYear
             checker.Month = GetTargetMonth
+            checker.EmploeeId = memberList(i, ColMemberSky.EmplyoeeId)
+            checker.Post = memberList(i, ColMemberSky.Post)
             
             checker.Check
         End If
     Next i
-
-    GetWorkDayCount 2020, 9, True
 
     ' ログ出力
     OutputResult
@@ -126,20 +118,20 @@ Private Function CheckPartner()
     Dim i As Long
     For i = RowMemberBP.First To UBound(memberList, 1) - FooterSizeMemberBP
         If Not IsEmpty(memberList(i, ColMemberBP.IsChecked)) And memberList(i, ColMemberBP.IsChecked) Then
-            Dim checker As PartnerChecker
-            Set checker = New PartnerChecker
-            
-            Dim fileName As String
-            Dim Name As String
-            Dim position As String
-            Dim employeeId As String
-            fileName = memberList(i, ColMemberSky.fileName)
-            Name = memberList(i, ColMemberSky.MemberName)
-            position = memberList(i, ColMemberSky.post)
-            employeeId = memberList(i, ColMemberSky.EmplyoeeId)
-            checker.Initialize GetTargetPath, GetBackupPath, fileName, Name, position, employeeId
-            
-            checker.Check
+'            Dim checker As PartnerChecker
+'            Set checker = New PartnerChecker
+'
+'            Dim FileName As String
+'            Dim Name As String
+'            Dim position As String
+'            Dim employeeId As String
+'            FileName = memberList(i, ColMemberSky.FileName)
+'            Name = memberList(i, ColMemberSky.MemberName)
+'            position = memberList(i, ColMemberSky.Post)
+'            employeeId = memberList(i, ColMemberSky.EmplyoeeId)
+'            checker.Initialize GetTargetPath, GetBackupPath, FileName, Name, position, employeeId
+'
+'            checker.Check
         End If
     Next i
 

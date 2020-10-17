@@ -11,10 +11,14 @@ Attribute VB_Exposed = False
 ' @note 未練がましいけど抽象クラスを作れるならな... ぐちゃぐちゃもじゅーる構成気色悪い
 Option Explicit
 
-Private year_ As Integer
-Private month_ As Integer
+Private year_ As Long
+Private month_ As Long
 Private fullName_ As String
-Private name_ As String
+Public Path As String
+Public BackupPath As String
+Public FileName As String
+Public EmploeeName As String
+Public EmploeeId As String
 
 Private isSky_ As Boolean ' 割と屈辱のプロパティである
 
@@ -37,68 +41,87 @@ Property Let Year(argYear As Long)
     year_ = argYear
 End Property
 
+Property Get Year() As Long
+    Year = year_
+End Property
+
 Property Let Month(argMonth As Long)
     month_ = argMonth
 End Property
 
-Property Let FullName(argFullName As String)
-    fullName_ = argFullName
+Property Get Month() As Long
+    Month = month_
 End Property
 
-Property Let Name(argName As String)
-    name_ = argName
+Property Get FullName() As String
+    If fullName_ = "" Then
+        fullName_ = GenerateFullName(Path, FileName)
+    End If
+    FullName = fullName_
 End Property
 
-' 基本入力
-Public Function Check_氏名(ByRef expected As String, ByRef actual As String)
+' 基本入力チェック
+Public Function Check_氏名(actual As String)
     LogApiIn "Check_氏名()"
-    If expected <> actual Then
-        AddResult ErrorLog, name_, "名前が間違っています(入力:" & actual & ")", fullName_
+    If EmploeeName <> actual Then
+        AddResult ErrorLog, EmploeeName, "名前が間違っています(期待値:" & year_ & ", 入力:" & actual & ")", fullName_
     End If
     LogApiOut "Check_氏名()"
 End Function
 
-Public Function Check_社員ID(ByRef expected As String, ByRef actual As String)
+Public Function Check_社員ID(actual As String)
     LogApiIn "Check_社員ID()"
-    If expected <> actual Then
-        AddResult ErrorLog, name_, "社員IDが間違っています(入力:" & actual & ")", fullName_
+    If EmploeeId <> actual Then
+        AddResult ErrorLog, EmploeeName, "社員IDが間違っています(期待値:" & EmploeeName & ", 入力:" & actual & ")", fullName_
     End If
     LogApiOut "Check_社員ID()"
 End Function
 
-Public Function Check_年(ByVal expected As Integer, ByVal actual As Integer)
+Public Function Check_年(ByVal actual As Long)
     LogApiIn "Check年()"
-    If expected <> actual Then
-        AddResult ErrorLog, name_, "入力年が間違っています(入力:" & actual & ")", fullName_
+    If year_ <> actual Then
+        AddResult ErrorLog, EmploeeName, "入力年が間違っています(期待値:" & year_ & ", 入力:" & actual & ")", fullName_
     End If
     LogApiOut "Check_年()"
 End Function
 
-Public Function Check_月(ByVal expected As Integer, ByVal actual As Integer)
+Public Function Check_月(ByVal actual As Long)
     LogApiIn "Check_月()"
-    If expected <> actual Then
-        AddResult ErrorLog, name_, "入力月が間違っています(入力:" & actual & ")", fullName_
+    If month_ <> actual Then
+        AddResult ErrorLog, EmploeeName, "入力月が間違っています(期待値:" & month_ & ", 入力:" & actual & ")", fullName_
     End If
     LogApiOut "Check_月()"
 End Function
 
-Public Function Check_稼働日数(ByVal actual As Integer)
+Public Function Check_稼働日数(ByVal actual As Long)
     LogApiIn "Check_稼働日数()"
     Dim expected As Long
     expected = GetWorkDayCount(year_, month_, isSky_)
     If expected <> actual Then
-        AddResult ErrorLog, name_, "稼働日数が間違っています(入力:" & actual & ")" & vbCrLf _
+        AddResult ErrorLog, EmploeeName, "稼働日数が間違っています(入力:" & actual & ")" & vbCrLf _
         & year_ & "年" & month_ & "月の稼働日数は" & expected & "日です。", fullName_
     End If
     LogApiOut "Check_稼働日数()"
 End Function
 
-' 一日の勤怠データ
-Public Function Check_労働基準法(ByRef actual As String)
+' 一日の勤怠データに対するチェック
+' @breif 労働基準法の休憩時間に従っているかどうかをチェックする
+'        ・8時間以上の勤務 -> 最低1時間の休憩時間
+'        ・6時間以上8時間未満の勤務 -> 最低45分の休憩時間
+' @note ハードコーディングがいやでテーブルにしようかと思ったけど逆にわかりづらくなる
+Public Function Check_労働基準法(ByRef actual As WorkScheduleDayData)
     LogApiIn "Check_労働基準法()"
-    If expected <> actual Then
-        AddResult WarningLog, name_, "労働基準法を違反しています。休憩時間を確認してください。(入力:" & actual & ")" & vbCrLf _
-        , fullName_
+    
+    Dim actualBreakTime As Date
+    With actual
+        actualBreakTime = .普休憩 + .時間外勤務_普休憩 + .時間外勤務_深休憩 + .時間外勤務朝残業_普休憩
+    End With
+    
+    If actual.総勤務時間 >= #8:00:00 AM# And actualBreakTime < #1:00:00 AM# Then
+        AddResult ErrorLog, EmploeeName, "労働基準法に違反しています。総勤務時間が1時間を超える場合は最低1時間の休憩を取得してください。(" & actual.日 & "日)", fullName_
+    ElseIf actual.総勤務時間 >= #6:00:00 AM# And actualBreakTime < #12:45:00 AM# Then
+        AddResult ErrorLog, EmploeeName, "労働基準法に違反しています。総勤務時間が6時間を超える場合は最低45分の休憩を取得してください。(" & actual.日 & "日)", fullName_
     End If
+
     LogApiOut "Check_労働基準法()"
 End Function

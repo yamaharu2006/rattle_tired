@@ -129,12 +129,12 @@ Private Function GetDateTimer() As String
     m = t - tint
     
     '// hh:mm:ss.fffÇ…êÆå`
-    ret = format(sHour, "00")
+    ret = Format(sHour, "00")
     ret = ret & ":"
-    ret = ret & format(sMinute, "00")
+    ret = ret & Format(sMinute, "00")
     ret = ret & ":"
-    ret = ret & format(sSecond, "00")
-    ret = ret & format(Left(Right(CStr(m), Len(m) - 1), 4), ".000")
+    ret = ret & Format(sSecond, "00")
+    ret = ret & Format(Left(Right(CStr(m), Len(m) - 1), 4), ".000")
     
     GetDateTimer = ret
     

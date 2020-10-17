@@ -13,10 +13,9 @@ Attribute VB_Exposed = False
 ' How in the world do you expect me to translate "teiji-gai kinmu asa-zangyou jikan futsu kyuukei"?
 Option Explicit
 
-'Private ”N_ As Long
-'Private Œ_ As Long
-'Private “ú_ As Long
-Private “ú•t_ As Date
+Private ”N_ As Long
+Private Œ_ As Long
+Private “ú_ As Long
 Private oĞ_ As Date
 Private ‘ŞĞ_ As Date
 Private ‹Î‘Ó_(4) As String
@@ -33,17 +32,33 @@ Private ŠÔŠO‹Î–±_•‹xŒe_ As Date
 Private ŠÔŠO‹Î–±_[‹xŒe_ As Date
 Private ‘‹Î–±ŠÔ_ As Date
 
-Public Function SetDate(argYear As Long, argMonth As Long, argDay As Long)
+Property Get “ú•t()
     Dim strDate As String
-    strDate = argYear & "/" & argMonth & "/" & argDay
+    strDate = ”N_ & "/" & Œ_ & "/" & “ú_
     If IsDate(strDate) Then
-        “ú•t_ = CDate(strDate)
+        “ú•t = CDate(strDate)
     End If
-End Function
+End Property
+
+Property Let ”N(arg As Long)
+    ”N_ = arg
+End Property
+
+Property Let Œ(arg As Long)
+    Œ_ = arg
+End Property
+
+Property Let “ú(arg As Long)
+    “ú_ = arg
+End Property
+
+Property Get “ú() As Long
+    “ú = “ú_
+End Property
 
 Property Let oĞ(time As Variant)
     If Not IsEmpty(time) Then
-        “ú•t_ = time
+        oĞ_ = time
     End If
 End Property
 
@@ -53,11 +68,12 @@ Property Let ‘ŞĞ(time As Variant)
     End If
 End Property
 
-Property Let ‹Î‘Ó(var() As Variant)
-    Dim i As Long
-    For i = 0 To UBound(‹Î‘Ó_) - 1
-        ‹Î‘Ó_(i) = var(i)
-    Next i
+Property Let ‹Î‘Ó(i As Long, val As String)
+    ‹Î‘Ó_(i) = val
+End Property
+
+Property Get ‹Î‘Ó(i As Long) As String
+    ‹Î‘Ó = ‹Î‘Ó_(i)
 End Property
 
 Property Let •‹xŒe(time As Variant)
@@ -66,10 +82,18 @@ Property Let •‹xŒe(time As Variant)
     End If
 End Property
 
+Property Get •‹xŒe() As Variant
+    •‹xŒe = •‹xŒe_
+End Property
+
 Property Let [‹xŒe(time As Variant)
     If Not IsEmpty(time) Then
         [‹xŒe_ = time
     End If
+End Property
+
+Property Get [‹xŒe() As Variant
+    [‹xŒe = [‹xŒe_
 End Property
 
 Property Let ’èŒã‹xŒe(time As Variant)
@@ -96,6 +120,10 @@ Property Let ŠÔŠO‹Î–±’©c‹Æ_•‹xŒe(time As Variant)
     End If
 End Property
 
+Property Get ŠÔŠO‹Î–±’©c‹Æ_•‹xŒe() As Variant
+    ŠÔŠO‹Î–±’©c‹Æ_•‹xŒe = ŠÔŠO‹Î–±’©c‹Æ_•‹xŒe_
+End Property
+
 Property Let ŠÔŠO‹Î–±_ŠJn(time As Variant)
     If Not IsEmpty(time) Then
         ŠÔŠO‹Î–±_ŠJn_ = time
@@ -114,10 +142,18 @@ Property Let ŠÔŠO‹Î–±_•‹xŒe(time As Variant)
     End If
 End Property
 
+Property Get ŠÔŠO‹Î–±_•‹xŒe() As Variant
+    ŠÔŠO‹Î–±_•‹xŒe = ŠÔŠO‹Î–±_•‹xŒe_
+End Property
+
 Property Let ŠÔŠO‹Î–±_[‹xŒe(time As Variant)
     If Not IsEmpty(time) Then
         ŠÔŠO‹Î–±_[‹xŒe_ = time
     End If
+End Property
+
+Property Get ŠÔŠO‹Î–±_[‹xŒe() As Variant
+    ŠÔŠO‹Î–±_[‹xŒe = ŠÔŠO‹Î–±_[‹xŒe_
 End Property
 
 Property Let ‘‹Î–±ŠÔ(time As Variant)
@@ -126,5 +162,8 @@ Property Let ‘‹Î–±ŠÔ(time As Variant)
     End If
 End Property
 
+Property Get ‘‹Î–±ŠÔ() As Variant
+    ‘‹Î–±ŠÔ = ‘‹Î–±ŠÔ_
+End Property
 
 

@@ -7,17 +7,17 @@ Private Const filePassword = "pass"
 
 ' @breif ファイルを開く
 ' @note 下回りでエラーを拾うのか割とぐちゃぐちゃになってきている
-Public Function OpenWorkbook(folderPath As String, fileName As String) As Boolean
+Public Function OpenWorkbook(folderPath As String, FileName As String) As Boolean
     LogApiIn "OpenWorkbook()"
     
     Dim FullName As String
-    FullName = GenerateFullName(folderPath, fileName)
+    FullName = GenerateFullName(folderPath, FileName)
     
     If ExistsFile(FullName) = False Then
         OpenWorkbook = False
         Exit Function
     ElseIf IsOpenedSameFile(FullName) = False Then
-        Workbooks.Open fileName:=FullName, ReadOnly:=True, Password:=filePassword
+        Workbooks.Open FileName:=FullName, ReadOnly:=True, Password:=filePassword
     End If
     
     OpenWorkbook = True
@@ -36,10 +36,10 @@ Public Function ConvertPathToFileName(Path As String) As String
 End Function
 
 ' @breif 絶対パスを生成する
-Public Function GenerateFullName(folderPath As String, fileName As String) As String
+Public Function GenerateFullName(folderPath As String, FileName As String) As String
     LogApiIn "OpenWorkbook()"
     
-    GenerateFullName = folderPath & "\" & fileName
+    GenerateFullName = folderPath & "\" & FileName
     
     LogApiIn "OpenWorkbook()"
 End Function
@@ -55,12 +55,12 @@ End Function
 
 ' @breif 同名の勤務表ファイルを開いているかを返す
 ' @attention ブックを開いていれば開いているほどチェックに時間がかかる
-Public Function IsOpenedSameFile(fileName As String) As Boolean
+Public Function IsOpenedSameFile(FileName As String) As Boolean
     LogApiIn "IsOpenedSameFile()"
 
     Dim wb As Workbook
     For Each wb In Workbooks
-        If wb.Name = fileName Then
+        If wb.Name = FileName Then
             IsOpenedSameFile = True
             Exit Function
         End If
@@ -72,11 +72,11 @@ End Function
 
 ' @breif ファイルをクローズする
 ' @note ファイル操作系関数群は別クラスに委譲したい
-Public Function CloseWorkbook(fileName As String)
+Public Function CloseWorkbook(FileName As String)
     LogApiIn "CloseWorkbook()"
     
-    If IsOpenedSameFile(fileName) = True Then
-        Workbooks(fileName).Close
+    If IsOpenedSameFile(FileName) = True Then
+        Workbooks(FileName).Close
     End If
     
     LogApiOut "CloseWorkbook()"
@@ -84,7 +84,7 @@ End Function
 
 ' @breif  ファイルをバックアップする
 ' @attention 再帰的にフォルダを作成する行為は危険を伴うため、親フォルダがない場合はポップアップを表示させる
-Public Function BackupFile(Path As String, fileName As String, bkupPath As String, bkupFileName As String) As Boolean
+Public Function BackupFile(Path As String, FileName As String, bkupPath As String, bkupFileName As String) As Boolean
     LogApiIn "SaveBackupFile()"
     
     Dim parentDir As String
@@ -101,7 +101,7 @@ Public Function BackupFile(Path As String, fileName As String, bkupPath As Strin
     
     MkDirRecursive bkupPath
     
-    CopyBackupFile Path, fileName, bkupPath, bkupFileName
+    CopyBackupFile Path, FileName, bkupPath, bkupFileName
     BackupFile = True
     
     LogApiOut "SaveBackupFile()"
@@ -143,16 +143,16 @@ Private Function MkDirRecursive(Path As String)
 End Function
 
 ' @breif ファイルをコピーする
-Private Function CopyBackupFile(Path As String, fileName As String, bkupPath As String, bkupFileName As String)
+Private Function CopyBackupFile(Path As String, FileName As String, bkupPath As String, bkupFileName As String)
     LogApiIn "CopyBackupFile()"
     
     Dim FullName As String
-    FullName = GenerateFullName(Path, fileName)
+    FullName = GenerateFullName(Path, FileName)
     
     If Dir(FullName) <> "" Then
         Dim bkupFullName As String
         bkupFullName = GenerateFullName(bkupPath, bkupFileName)
-        FileCopy GenerateFullName(Path, fileName), bkupFullName
+        FileCopy GenerateFullName(Path, FileName), bkupFullName
     End If
 
     LogApiOut "CopyBackupFile()"

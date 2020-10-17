@@ -7,8 +7,8 @@ Option Explicit
 Private TargetPath As String
 Private BackupPath As String
 
-Private targetYear_ As Integer
-Private targetMonth_ As Integer
+Private targetYear_ As Long
+Private targetMonth_ As Long
 
 Private isOutputFileCheckedResult_ As Boolean
 Private dirCheckedResult_ As String
@@ -71,11 +71,11 @@ Public Function GetBackupPath() As String
     GetBackupPath = BackupPath
 End Function
 
-Public Function GetTargetYear() As Integer
+Public Function GetTargetYear() As Long
     GetTargetYear = targetYear_
 End Function
 
-Public Function GetTargetMonth() As Integer
+Public Function GetTargetMonth() As Long
     GetTargetMonth = targetMonth_
 End Function
 

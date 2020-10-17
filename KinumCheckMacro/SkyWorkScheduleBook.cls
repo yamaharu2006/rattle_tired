@@ -55,15 +55,15 @@ Private WorkbookName_ As String
 Private 年_ As Long
 Private 月_ As Long
 Private 稼働日数_ As Long
-Private チーム_ As String
-Private 役職_ As String
-Private グループ_ As String
-Private 所属_ As String
-Private 社員ID_ As String
-Private 氏名_ As String
+Public チーム As String
+Public 役職 As String
+Public グループ As String
+Public 所属 As String
+Public 社員ID As String
+Public 氏名 As String
 
 Private Const DaysDataArrayMax As Long = 32 ' 勤務データ配列の最大要素数(31+1)
-Private 勤務データ_(DaysDataArrayMax) As WorkScheduleDayData
+Private 勤務データ_(1 To DaysDataArrayMax) As WorkScheduleDayData ' Index = 日になるように配列を設定する
 
 ' Setter/Getter
 Property Let WorkbookName(Name As String)
@@ -78,10 +78,18 @@ Property Let Year(arg As Variant)
     End If
 End Property
 
+Property Get Year() As Variant
+    Year = 年_
+End Property
+
 Property Let Month(arg As Variant)
     If Not IsEmpty(arg) Then
         月_ = arg
     End If
+End Property
+
+Property Get Month() As Variant
+    Month = 月_
 End Property
 
 Property Let 稼働日数(arg As Long)
@@ -94,30 +102,6 @@ Property Get 稼働日数() As Long
     稼働日数 = 稼働日数_
 End Property
 
-Property Let チーム(arg As String)
-    チーム_ = arg
-End Property
-
-Property Let 役職(arg As String)
-    役職_ = arg
-End Property
-
-Property Let グループ(arg As String)
-    グループ_ = arg
-End Property
-
-Property Let 所属(arg As String)
-    所属_ = arg
-End Property
-
-Property Let 社員ID(arg As String)
-    社員ID_ = arg
-End Property
-
-Property Let 氏名(arg As String)
-    氏名_ = arg
-End Property
-
 Property Get 勤務データ(i As Long) As WorkScheduleDayData
     Set 勤務データ = 勤務データ_(i)
 End Property
@@ -127,7 +111,7 @@ Private Sub Class_Initialize()
     LogApiIn "SkyWorkScheduleBook:Class_Initialize()"
     
     Dim i As Long
-    For i = 0 To UBound(勤務データ_)
+    For i = 1 To UBound(勤務データ_)
         Set 勤務データ_(i) = New WorkScheduleDayData
     Next i
     
@@ -139,7 +123,7 @@ Private Sub Class_Terminate()
     LogApiIn "SkyChecker:Class_Terminate()"
     
     Dim i As Long
-    For i = 0 To UBound(勤務データ_)
+    For i = 1 To UBound(勤務データ_)
         Set 勤務データ_(i) = Nothing
     Next i
 
@@ -154,32 +138,42 @@ Public Function ImportData()
         年_ = .Range(Range年)
         月_ = .Range(Range月)
         稼働日数_ = .Range(Range稼働日数)
-        チーム_ = .Range(Rangeチーム)
-        役職_ = .Range(Range役職)
-        グループ_ = .Range(Rangeグループ)
-        社員ID_ = .Range(Range社員ID)
-        氏名_ = .Range(Range氏名)
+        チーム = .Range(Rangeチーム)
+        役職 = .Range(Range役職)
+        グループ = .Range(Rangeグループ)
+        社員ID = .Range(Range社員ID)
+        氏名 = .Range(Range氏名)
         
         Dim var As Variant
         var = .Range(Range勤務データ)
         Dim i As Long
         For i = 1 To UBound(var) Step 2
-            勤務データ_(i / 2).SetDate 年_, 月_, Int(i / 2 + 1)
-            勤務データ_(i / 2).出社 = var(i + 1, 勤務時間_出社列)
-            勤務データ_(i / 2).退社 = var(i + 1, 勤務時間_退社列)
-            Dim 勤怠() As Variant
-            勤怠 = Array(var(i, 勤怠列1), var(i, 勤怠列2), var(i + 1, 勤怠列1), var(i + 1, 勤怠列2))
-            勤務データ_(i / 2).勤怠 = 勤怠
-            勤務データ_(i / 2).備考 = var(i, 備考列)
-            勤務データ_(i / 2).普休憩 = var(i + 1, 定時時間_普休憩列)
-            勤務データ_(i / 2).深休憩 = var(i + 1, 定時時間_深休憩列)
-            勤務データ_(i / 2).時間外勤務朝残業_開始 = var(i + 1, 時間外勤務_開始列)
-            勤務データ_(i / 2).時間外勤務朝残業_終了 = var(i + 1, 時間外勤務_終了列)
-            勤務データ_(i / 2).時間外勤務朝残業_普休憩 = var(i + 1, 時間外勤務_普休憩列)
-            勤務データ_(i / 2).時間外勤務_開始 = var(i + 1, 時間外勤務_開始列)
-            勤務データ_(i / 2).時間外勤務_普休憩 = var(i + 1, 時間外勤務_普休憩列)
-            勤務データ_(i / 2).時間外勤務_深休憩 = var(i + 1, 時間外勤務_終了列)
-            勤務データ_(i / 2).総勤務時間 = var(i + 1, 総勤務時間列)
+            Dim index As Long
+            index = Int(i / 2 + 1)
+            Dim upper As Long ' 上段
+            upper = i
+            Dim lower As Long ' 下段
+            lower = i + 1
+            
+            勤務データ_(index).年 = 年_
+            勤務データ_(index).月 = 月_
+            勤務データ_(index).日 = var(lower, 日列)
+            勤務データ_(index).出社 = var(lower, 勤務時間_出社列)
+            勤務データ_(index).退社 = var(lower, 勤務時間_退社列)
+            勤務データ_(index).勤怠(0) = var(upper, 勤怠列1)
+            勤務データ_(index).勤怠(1) = var(lower, 勤怠列1)
+            勤務データ_(index).勤怠(2) = var(upper, 勤怠列2)
+            勤務データ_(index).勤怠(3) = var(lower, 勤怠列2)
+            勤務データ_(index).備考 = var(upper, 備考列)
+            勤務データ_(index).普休憩 = var(lower, 定時時間_普休憩列)
+            勤務データ_(index).深休憩 = var(lower, 定時時間_深休憩列)
+            勤務データ_(index).時間外勤務朝残業_開始 = var(upper, 時間外勤務_開始列)
+            勤務データ_(index).時間外勤務朝残業_終了 = var(upper, 時間外勤務_終了列)
+            勤務データ_(index).時間外勤務朝残業_普休憩 = var(upper, 時間外勤務_普休憩列)
+            勤務データ_(index).時間外勤務_開始 = var(lower, 時間外勤務_開始列)
+            勤務データ_(index).時間外勤務_普休憩 = var(lower, 時間外勤務_普休憩列)
+            勤務データ_(index).時間外勤務_深休憩 = var(lower, 時間外勤務_終了列)
+            勤務データ_(index).総勤務時間 = var(lower, 総勤務時間列)
         Next i
     End With
     

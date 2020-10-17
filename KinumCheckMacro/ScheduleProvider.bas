@@ -53,7 +53,7 @@ End Function
 
 ' @breif 稼働日を取得する
 ' @note 稼働日が未計算であれば計算する。計算回数は抑えたい
-Public Function GetWorkDayCount(Year As Integer, Month As Integer, IsSky As Boolean) As Long
+Public Function GetWorkDayCount(Year As Long, Month As Long, IsSky As Boolean) As Long
     LogApiIn "GetWorkDayCount()"
     
     Dim key  As Date
@@ -69,13 +69,13 @@ Public Function GetWorkDayCount(Year As Integer, Month As Integer, IsSky As Bool
 End Function
 
 ' @brief 出勤日を計算する
-Private Function CalculateWorkDayCount(Year As Integer, Month As Integer, IsSky As Boolean) As Long
+Private Function CalculateWorkDayCount(Year As Long, Month As Long, IsSky As Boolean) As Long
     LogApiIn "CalculateWorkDayCount()"
 
     Dim count As Long
     count = 0
 
-    Dim lastDayOfMonth As Integer
+    Dim lastDayOfMonth As Long
     lastDayOfMonth = GetLastDayOfMonth(Year, Month)
     
     Dim i As Long
@@ -97,7 +97,7 @@ Private Function CalculateWorkDayCount(Year As Integer, Month As Integer, IsSky 
 End Function
 
 ' @brief 月の最終日を取得する
-Private Function GetLastDayOfMonth(argYear As Integer, argMonth As Integer) As Integer
+Public Function GetLastDayOfMonth(argYear As Long, argMonth As Long) As Long
     LogApiIn "CalculateWorkDayCount()"
 
     Dim lastDay As Date
